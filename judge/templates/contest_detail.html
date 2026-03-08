@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ contest.title }} - DSMOJ</title>
+    
+    <style>
+    :root {
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --primary: #3498db;
+        --success: #2ecc71;
+        --error: #e74c3c;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --gray-light: #1e1e1e;
+            --gray-medium: #333333;
+        }
+    }
+
+    body {
+        font-family: 'Inter', system-ui, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+    }
+
+    /* Navbar giống problems.html */    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    nav {
+        margin: 0 auto;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a { 
+        color: var(--text); 
+        text-decoration: none; 
+        font-weight: 500;
+        margin-left: 1.5rem;
+    }
+        nav a:hover { color: var(--primary); }
+
+    .logo a { 
+        margin-left: 0; 
+        color: var(--primary) !important; 
+        font-size: 1.3rem;
+    }
+    .badge{
+        border: 2px solid var(--gray-medium);
+        padding: 2px;
+        border-radius: 5px;
+        background-color: #121212;
+        font-size: 12px;
+    }
+
+    .container { max-width: 1000px; margin: 2rem auto; padding: 0 1.2rem; }
+
+    /* Header Contest */
+    .contest-header {
+        background: var(--gray-light);
+        padding: 2rem;
+        border-radius: 12px;
+        border: 1px solid var(--gray-medium);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .contest-info h1 { margin: 0 0 0.5rem 0; color: var(--primary); }
+    .contest-timer { text-align: right; }
+    #countdown { font-size: 1.5rem; font-weight: bold; font-family: 'Fira Code', monospace; color: var(--error); }
+
+    /* Bảng bài tập */
+    table { width: 100%; border-collapse: collapse; background: var(--gray-light); border-radius: 12px; overflow: hidden; border: 1px solid var(--gray-medium); }
+    th { background: var(--primary); color: white; text-align: left; padding: 15px; text-transform: uppercase; font-size: 0.85rem; }
+    td { padding: 15px; border-bottom: 1px solid var(--gray-medium); }
+    
+    .prob-status { width: 40px; text-align: center; }
+    .status-ac { color: var(--success); font-weight: bold; }
+    .status-wa { color: var(--error); font-weight: bold; }
+
+    .btn-rank {
+        display: inline-block;
+        margin-top: 1rem;
+        padding: 10px 20px;
+        background: var(--gray-medium);
+        color: var(--text);
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+        .contest-banner {
+        background-color: var(--error);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #c0392b;
+        position: sticky; /* THÊM MỚI */
+        top: 60px;       /* THÊM MỚI - Hít dưới Navbar */
+        z-index: 999;    /* THÊM MỚI - Nằm trên bảng */
+    }
+
+    a { color: var(--text); text-decoration: none; }
+    a:hover { color: var(--primary); }
+
+    .markdown-body { margin-top: 1rem; font-size: 0.95rem; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="nav-wrapper">
+        <nav>
+            <div class="logo">
+                <a href="/"><strong>DSMOJ</strong> <small>v1.1</small></a>
+            </div>
+            <div class="menu">
+                <a href="/problems/">Problems</a>
+                <a href="/contests/">Contests</a>
+                <a href="/submissions/">Submissions</a>
+                <a href="/rankings/">Rankings</a>
+                {% if user.is_authenticated %}
+                    <a href="/profile/{{user.username}}">{{ user.username }}</a>
+                {% else %}
+                    <a href="/login/">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+{% if active_contest %}
+    {% if show_contest_mode %}
+    <div class="contest-banner" style="background: var(--error); display: flex; justify-content: space-between; padding: 10px 20px; position: sticky">
+        <span>🎯 CHẾ ĐỘ THI ĐẤU: {{ active_contest.title }}</span>
+        <a href="{% url 'toggle_focus' %}" style="background: white; color: var(--error); padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            XEM KHO ĐỀ CHUNG
+        </a>
+    </div>
+    {% else %}
+    <div class="contest-banner" style="background: yellow; display: flex; justify-content: space-between; padding: 10px 20px; position: sticky">
+        <span style="color: #1a1a1a;">📋 BẠN ĐANG XEM KHO ĐỀ CHUNG</span>
+        <a href="{% url 'toggle_focus' %}" style="background: #1a1a1a; color: white; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            QUAY LẠI PHÒNG THI
+        </a>
+    </div>
+    {% endif %}
+{% endif %}
+
+    <div class="container">
+        <div class="contest-header">
+            <div class="contest-info">
+                <h1>{{ contest.title }}</h1>
+                <div class="markdown-body">{{ contest.description|safe }}</div>
+                <a href="/contest/{{ contest.id }}/rankings/" class="btn-rank">📊 Bảng xếp hạng</a>
+            </div>
+            <div class="contest-timer">
+                <div id="timer-label">Thời gian còn lại</div>
+                <div id="countdown">--:--:--</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="prob-status">#</th>
+                    <th>Mã bài</th>
+                    <th>Tên bài tập</th>
+                    <th>Điểm tối đa</th>
+                    <th>Trạng thái của bạn</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in problems %}
+                <tr>
+                    <td class="prob-status"><strong>{{ forloop.counter }}</strong></td>
+                    <td><code>{{ p.problem_code }}</code></td>
+                    <td>
+                        <a href="/{{ contest.slug }}/submit/{{ p.problem_code }}/" style="font-weight: 600;">
+                            {{ p.title }}
+                        </a>
+                    </td>
+                    <td>{{ p.difficulty }}</td>
+                    <td>
+                        {% if p.user_status == "AC" %}
+                            <span class="status-ac">✔ 100/100</span>
+                        {% elif p.user_status %}
+                            <span class="status-wa">✘ {{ p.user_score }}</span>
+                        {% else %}
+                            <span style="color: #888;">Chưa nộp</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Logic đếm ngược đơn giản
+        const endTime = new Date("{{ contest.end_time|date:'Y-m-d H:i:s' }}").getTime();
+        
+        const x = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = endTime - now;
+            
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById("countdown").innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
+            
+            if (distance < 0) {
+                clearInterval(x);
+                document.getElementById("countdown").innerHTML = "ĐÃ KẾT THÚC";
+                document.getElementById("timer-label").innerHTML = "Cuộc thi";
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

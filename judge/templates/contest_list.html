@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSMOJ - Danh sách Contest</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+    :root {
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --primary: #3498db;
+        --success: #2ecc71;
+        --warning: #f1c40f;
+        --error: #e74c3c;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+        --code-bg: #2d3436;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --gray-light: #1e1e1e;
+            --gray-medium: #333333;
+        }
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: var(--bg);
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Navbar */
+      .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    /* Full-width Navbar Fix */
+    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    nav {
+        margin: 0 auto;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a { 
+        color: var(--text); 
+        text-decoration: none; 
+        font-weight: 500;
+        margin-left: 1.5rem;
+    }
+        nav a:hover { color: var(--primary); }
+
+    .logo a { 
+        margin-left: 0; 
+        color: var(--primary) !important; 
+        font-size: 1.3rem;
+    }
+    .badge{
+        border: 2px solid var(--gray-medium);
+        padding: 2px;
+        border-radius: 5px;
+        background-color: #121212;
+        font-size: 12px;
+    }
+
+    /* Layout */
+    .container {
+        max-width: 1100px;
+        margin: 2rem auto;
+        padding: 0 1.2rem;
+    }
+
+    h2 { 
+        margin-top: 2.5rem; 
+        color: var(--text); 
+        display: flex; 
+        align-items: center; 
+        gap: 10px;
+        border-left: 4px solid var(--primary);
+        padding-left: 15px;
+    }
+
+    /* Table Styles */
+    .table-wrapper {
+        background: var(--gray-light);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--gray-medium);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--gray-medium); color: var(--text); text-align: left; padding: 15px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+    td { padding: 15px; border-bottom: 1px solid var(--gray-medium); font-size: 0.95rem; }
+    
+    tr:last-child td { border-bottom: none; }
+    
+    @media (prefers-color-scheme: dark) {
+        td { background: #1e1e1e; color: #e0e0e0; }
+        th { background: #252525; }
+    }
+
+    /* Status Badges */
+    .status-live { color: var(--success); font-weight: bold; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    
+    .status-upcoming { color: var(--primary); font-weight: bold; }
+    .status-past { color: #888; }
+
+    /* Button System */
+    .btn-join {
+        display: inline-block;
+        background: var(--primary);
+        color: white !important;
+        padding: 8px 18px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none !important;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+    }
+
+    .btn-join:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn-success { background: var(--success); }
+    .btn-disabled { background: #7f8c8d; cursor: not-allowed; }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .empty-msg { padding: 20px; text-align: center; color: #888; font-style: italic; }
+    
+    /* Messages (Alerts) */
+    .messages {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    .message {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+        .contest-banner {
+        background-color: var(--error);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #c0392b;
+        position: sticky; /* THÊM MỚI */
+        top: 60px;       /* THÊM MỚI - Hít dưới Navbar */
+        z-index: 999;    /* THÊM MỚI - Nằm trên bảng */
+    }
+    .message.success { background: rgba(46, 204, 113, 0.2); color: var(--success); border: 1px solid var(--success); }
+    .message.error { background: rgba(231, 76, 60, 0.2); color: var(--error); border: 1px solid var(--error); }
+    </style>
+</head>
+<body>
+
+    <div class="nav-wrapper">
+        <nav>
+            <div class="logo">
+                <a href="/"><strong>DSMOJ</strong> <small>v1.1</small></a>
+            </div>
+            <div class="menu">
+                <a href="/problems/">Problems</a>
+                <a href="/contests/">Contests</a>
+                <a href="/submissions/">Submissions</a>
+                <a href="/rankings/">Rankings</a>
+                {% if user.is_authenticated %}
+                    <a href="/profile/{{user.username}}">{{ user.username }}</a>
+                {% else %}
+                    <a href="/login/">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+{% if active_contest %}
+    {% if show_contest_mode %}
+    <div class="contest-banner" style="background: var(--error); display: flex; justify-content: space-between; padding: 10px 20px; position: sticky">
+        <span>🎯 CHẾ ĐỘ THI ĐẤU: {{ active_contest.title }}</span>
+        <a href="{% url 'toggle_focus' %}" style="background: white; color: var(--error); padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            XEM KHO ĐỀ CHUNG
+        </a>
+    </div>
+    {% else %}
+    <div class="contest-banner" style="background: yellow; display: flex; justify-content: space-between; padding: 10px 20px; position: sticky">
+        <span style="color: #1a1a1a;">📋 BẠN ĐANG XEM KHO ĐỀ CHUNG</span>
+        <a href="{% url 'toggle_focus' %}" style="background: #1a1a1a; color: white; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            QUAY LẠI PHÒNG THI
+        </a>
+    </div>
+    {% endif %}
+{% endif %}
+    <div class="container">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h2><span class="status-live">●</span> Đang diễn ra</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên cuộc thi</th>
+                        <th>Kết thúc lúc</th>
+                        <th>Đối tượng</th>
+                        <th style="text-align: center;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in active %}
+                    <tr>
+                        <td><a href="/contest/{{ c.id }}"><strong>{{ c.title }}</strong></a></td>
+                        <td>{{ c.end_time|date:"H:i - d/m" }}</td>
+                        <td>{{ c.group.name|default:"Tự do" }}</td>
+                        <td style="text-align: center;">
+                            {% if user.is_authenticated %}
+                                {% if user in c.participants.all %}
+                                    <a href="/contest/{{ c.id }}" class="btn-join btn-success">VÀO THI</a>
+                                {% else %}
+                                    <form action="/register-contest/{{ c.id }}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-join">ĐĂNG KÝ</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <a href="/login/" class="btn-join btn-disabled">LOG IN</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="empty-msg">Hiện không có cuộc thi nào đang diễn ra.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2><span class="status-upcoming">○</span> Sắp khởi tranh</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên cuộc thi</th>
+                        <th>Bắt đầu lúc</th>
+                        <th>Thời lượng</th>
+                        <th style="text-align: center;">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in upcoming %}
+                    <tr>
+                        <td><a href="/contest/{{ c.id }}">{{ c.title }}</a></td>
+                        <td>{{ c.start_time|date:"H:i - d/m/Y" }}</td>
+                        <td>{{ c.duration }} phút</td>
+                        <td style="text-align: center;">
+                            {% if user.is_authenticated and user in c.participants.all %}
+                                <span class="status-upcoming">ĐÃ ĐĂNG KÝ</span>
+                            {% else %}
+                                <form action="/register-contest/{{ c.id }}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-join">GHI DANH SỚM</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="empty-msg">Chưa có lịch cuộc thi mới.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2><span class="status-past">⊘</span> Lịch sử cuộc thi</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên cuộc thi</th>
+                        <th>Thời gian thi</th>
+                        <th>Thí sinh</th>
+                        <th>Kết quả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in past %}
+                    <tr>
+                        <td><a href="/contest/{{ c.id }}" style="color: #888;">{{ c.title }}</a></td>
+                        <td>{{ c.start_time|date:"d/m/Y" }}</td>
+                        <td>{{ c.participants.count }} thí sinh</td>
+                        <td><a href="/contest/{{ c.id }}/rankings/">Leaderboard</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="empty-msg">Chưa có dữ liệu lịch sử.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

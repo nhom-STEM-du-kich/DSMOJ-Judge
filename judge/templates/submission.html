@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission #{{ submission.id }} - DSMOJ</title>
+    
+    <style>
+    :root {
+        --bg: #ffffff; --text: #1a1a1a; --primary: #3498db; --success: #2ecc71;
+        --error: #e74c3c; --gray-light: #f8f9fa; --gray-medium: #e9ecef; --code-bg: #2d3436;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root { --bg: #121212; --text: #e0e0e0; --gray-light: #1e1e1e; --gray-medium: #333333; }
+    }
+
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--text); background: var(--bg); margin: 0; }
+    
+    /* Navbar cũ giữ nguyên cho đồng bộ */
+    .nav-wrapper { width: 100%; background: var(--bg); border-bottom: 1px solid var(--gray-medium); position: sticky; top: 0; z-index: 1000; }
+    nav { margin: 0 auto; padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+    nav a { color: var(--text); text-decoration: none; font-weight: 500; margin-left: 1.5rem; }
+    .logo a { color: var(--primary) !important; font-size: 1.3rem; margin: 0; }
+
+    .container { max-width: 800px; margin: 2.5rem auto; padding: 0 1.2rem; }
+
+    /* Card trạng thái tổng quát */
+    .status-banner {
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-medium);
+        background: var(--gray-light);
+    }
+    .status-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+    
+    /* Màu sắc theo trạng thái */
+    .AC-text { color: var(--success); }
+    .WA-text { color: var(--error); }
+    .TLE-text, .MLE-text { color: #f39c12; }
+    .CE-text { color: #95a5a6; }
+
+    /* Khung chứa Log chi tiết */
+    .log-container {
+        background: var(--code-bg);
+        color: #dcdde1;
+        padding: 1.5rem;
+        border-radius: 8px;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        font-size: 0.95rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        line-height: 1.8;
+        border-left: 5px solid var(--primary);
+    }
+    
+        .contest-banner {
+        background-color: var(--error);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #c0392b;
+        position: sticky; /* THÊM MỚI */
+        top: 60px;       /* THÊM MỚI - Hít dưới Navbar */
+        z-index: 999;    /* THÊM MỚI - Nằm trên bảng */
+    }
+    .log-header { 
+        color: #7f8c8d; 
+        font-size: 0.8rem; 
+        text-transform: uppercase; 
+        margin-bottom: 1rem; 
+        border-bottom: 1px solid #444;
+        padding-bottom: 0.5rem;
+    }
+
+    h2 { font-size: 1.2rem; margin-top: 2rem; }
+    .meta-info { color: gray; font-size: 0.9rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-wrapper">
+        <nav>
+            <div class="logo">
+                <a href="/"><strong>DSMOJ</strong> <small>v1.1</small></a>
+            </div>
+            <div class="menu">
+                <a href="/problems/">Problems</a>
+                <a href="/contests/">Contests</a>
+                <a href="/submissions/">Submissions</a>
+                <a href="/rankings/">Rankings</a>
+                {% if user.is_authenticated %}
+                    <a href="/profile/{{user.username}}">{{ user.username }}</a>
+                {% else %}
+                    <a href="/login/">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+{% if active_contest %}
+    {% if show_contest_mode %}
+    <div class="contest-banner" style="background: var(--error); display: flex; justify-content: space-between; padding: 10px 20px; position: sticky">
+        <span>🎯 CHẾ ĐỘ THI ĐẤU: {{ active_contest.title }}</span>
+        <a href="{% url 'toggle_focus' %}" style="background: white; color: var(--error); padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            XEM KHO ĐỀ CHUNG
+        </a>
+    </div>
+    {% else %}
+    <div class="contest-banner" style="background: yellow; display: flex; justify-content: space-between; padding: 10px 20px; position: sticky">
+        <span style="color: #1a1a1a;">📋 BẠN ĐANG XEM KHO ĐỀ CHUNG</span>
+        <a href="{% url 'toggle_focus' %}" style="background: #1a1a1a; color: white; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            QUAY LẠI PHÒNG THI
+        </a>
+    </div>
+    {% endif %}
+{% endif %}
+<div class="container">
+    <div class="status-banner">
+        <div class="meta-info">Submission #{{ submission.id }} | Problem: {{ submission.problem_code }}</div>
+        <div class="status-title {{ submission.status }}-text">
+            {{ submission.status }}
+        </div>
+        <div style="font-weight: bold;">User: {{ submission.user}}</div>
+    </div>
+
+    <h2>Execution Logs</h2>
+    <div class="log-container">
+        <div class="log-header">Detailed Testcase Verdicts</div>
+        <div class="log-content">
+            {{ submission.result_log|safe}}
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; text-align: center;">
+        <a href="/problem/{{ submission.problem_code }}" style="color: var(--primary); text-decoration: none;">← Quay lại đề bài</a>
+    </div>
+</div>
+
+</body>
+</html>
+<script>
+    // Tự động reload trang sau 3 giây
+    setTimeout(function(){
+       location.reload();
+    }, 3000);
+</script>

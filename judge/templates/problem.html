@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSMOJ - {{ problem.title }}</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+    :root {
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --primary: #3498db;
+        --success: #2ecc71;
+        --error: #e74c3c;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+        --code-bg: #2d3436;
+        --sidebar-width: 280px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --gray-light: #1e1e1e;
+            --gray-medium: #333333;
+            --code-bg: #000000;
+        }
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: var(--bg);
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    nav {
+        margin: 0 auto;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a { 
+        color: var(--text); 
+        text-decoration: none; 
+        font-weight: 500;
+        margin-left: 1.5rem;
+    }
+    nav a:hover { color: var(--primary); }
+
+    .logo a { 
+        margin-left: 0; 
+        color: var(--primary) !important; 
+        font-size: 1.3rem;
+    }
+
+    /* Badge thích ứng */
+    .badge {
+        border: 1px solid var(--gray-medium);
+        padding: 4px 8px;
+        border-radius: 5px;
+        background-color: var(--gray-medium); 
+        color: var(--text); 
+        font-size: 12px;
+        display: inline-block;
+        margin-bottom: 4px;
+    }
+
+    /* Layout chính giữ nguyên */
+    .main-layout {
+        display: flex;
+        margin: 2rem;
+        gap: 2rem;
+        padding: 0 1.2rem;
+        align-items: flex-start;
+    }
+
+    .problem-container { 
+        flex: 1;
+        background: var(--gray-light); 
+        padding: 2.5rem; 
+        border-radius: 12px; 
+        border: 1px solid var(--gray-medium); 
+    }
+
+    .extra_information {
+        width: var(--sidebar-width);
+        position: sticky;
+        top: 120px; 
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        align-self: flex-start;
+        height: fit-content;
+    }
+
+    .info-card {
+        background: var(--gray-light);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--gray-medium);
+    }
+
+    h1 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--gray-medium); padding-bottom: 0.5rem; }
+    
+    code {padding: 2px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 0.9em; }
+    
+    /* Ép chữ trắng trong khối pre để luôn thấy được Input/Output */
+    pre { 
+        background: var(--code-bg); 
+        color: #ffffff !important; 
+        padding: 1.2rem; 
+        border-radius: 8px; 
+        overflow-x: auto; 
+    }
+    
+    .btn-submit { 
+        display: block;
+        text-align: center;
+        background: var(--success); 
+        color: white !important; 
+        padding: 15px; 
+        border-radius: 8px; 
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 1.1rem;
+    }
+
+    /* Stats Card dọn dẹp màu cứng */
+    .stats-card { 
+        background: var(--bg); 
+        border-radius: 8px; 
+        border: 1px solid var(--gray-medium); 
+        margin-bottom: 1.5rem; 
+    }
+    .stats-content { display: flex; flex-direction: column; padding: 12px; gap: 8px; }
+    .stat-item {
+        background: var(--gray-light); 
+        color: var(--text); 
+        padding: 8px 12px;
+        border-radius: 4px; 
+        font-size: 0.85rem; 
+        display: flex; 
+        align-items: center;
+        gap: 10px; 
+        border: 1px solid var(--gray-medium);
+    }
+
+    /* Markdown Styling */
+    .markdown-body { color: var(--text); }
+    .markdown-body h2 { border-bottom: 1px solid var(--gray-medium); padding-bottom: 0.3em; }
+
+    /* Contest Banner */
+    .contest-banner {
+        width: 100%;
+        z-index: 999;
+        position: sticky;
+        top: 55px; /* Giả sử nav cao khoảng 55-60px */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 900px) {
+        .main-layout { flex-direction: column; }
+        .extra_information { width: 100%; position: static; }
+    }
+    </style>
+</head>
+<body>
+
+   <div class="nav-wrapper">
+        <nav>
+            <div class="logo">
+                <a href="/"><strong>DSMOJ</strong> <small>v1.1</small></a>
+            </div>
+            <div class="menu">
+                <a href="/problems/">Problems</a>
+                <a href="/contests/">Contests</a>
+                <a href="/submissions/">Submissions</a>
+                <a href="/rankings/">Rankings</a>
+                {% if user.is_authenticated %}
+                    <a href="/profile/{{user.username}}">{{ user.username }}</a>
+                {% else %}
+                    <a href="/login/">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+
+{% if active_contest %}
+    <div class="contest-banner" style="background: {% if show_contest_mode %}var(--error){% else %}#f1c40f{% endif %}; color: {% if show_contest_mode %}white{% else %}#1a1a1a{% endif %}; position: sticky">
+        <span>🎯 {% if show_contest_mode %}CHẾ ĐỘ THI ĐẤU: {{ active_contest.title }}{% else %}📋 KHO ĐỀ CHUNG{% endif %}</span>
+        <a href="{% url 'toggle_focus' %}" style="background: {% if show_contest_mode %}white{% else %}#1a1a1a{% endif %}; color: {% if show_contest_mode %}var(--error){% else %}white{% endif %}; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; text-decoration: none;">
+            {% if show_contest_mode %}XEM KHO ĐỀ CHUNG{% else %}QUAY LẠI PHÒNG THI{% endif %}
+        </a>
+    </div>
+{% endif %}
+
+    <div class="main-layout">
+        <div class="problem-container">
+            <h1>{{ problem.title }}</h1>
+            
+            <div id="raw-data" style="display: none;">{{ problem.description|safe }}</div>
+            
+            <div id="render-target" class="markdown-body">
+                <p style="color: gray;">Đang giải mã đề bài...</p>
+            </div>
+        </div>
+
+        <aside class="extra_information">
+            {% if active_contest and show_contest_mode %}
+                <a href="/contest/{{ active_contest.id }}/submit/{{ problem.problem_code }}" class="btn-submit" style="background: var(--error);">
+                    🚀 Submit to Contest
+                </a>
+            {% else %}
+                <a href="/submit/{{ problem.problem_code }}" class="btn-submit">
+                    🚀 Submit Here
+                </a>
+            {% endif %}
+
+            <div class="info-card">
+                <h3 style="margin-top: 0; font-size: 1rem; color: var(--primary);">Problem Limits</h3>
+                <div class="stats-card">
+                    <div class="stats-content">
+                        <div class="stat-item"><span>✅</span> Points: {{problem.difficulty}}</div>
+                        <div class="stat-item"><span>⏰</span> Time: {{problem.time_limit}}s</div>
+                        <div class="stat-item"><span>💾</span> Memory: {{problem.memory_limit}}KB</div>
+                        <div class="stat-item"><span>📄</span> Input: stdin</div>
+                        <div class="stat-item"><span>📄</span> Output: stdout</div>
+                    </div>
+                </div>
+                <p style="font-size: 0.8rem; color: gray;">Author: {{ problem.author }}</p>
+                {% for cat in problem.categories.all %}
+                        <span class="badge">{{ cat.name }}</span>
+                {% endfor %}
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            try {
+                // Lấy textContent để tránh các lỗi render ký tự đặc biệt của Markdown
+                const rawText = document.getElementById('raw-data').textContent.trim();
+                const target = document.getElementById('render-target');
+                
+                // Render Markdown trước
+                target.innerHTML = marked.parse(rawText);
+
+                // Sau đó mới render KaTeX
+                if (window.renderMathInElement) {
+                    renderMathInElement(target, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ],
+                        throwOnError: false
+                    });
+                }
+            } catch (e) {
+                console.error("Lỗi render:", e);
+                document.getElementById('render-target').innerHTML = "<p style='color:red;'>Lỗi hiển thị đề bài!</p>";
+            }
+        });
+    </script>
+</body>
+</html>

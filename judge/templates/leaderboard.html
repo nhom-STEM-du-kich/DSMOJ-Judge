@@ -1,0 +1,232 @@
+{% load contest_extras %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng xếp hạng: {{ contest.title }} - DSMOJ</title>
+    
+    <style>
+    :root {
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --primary: #3498db;
+        --success: #2ecc71;
+        --error: #e74c3c;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --gray-light: #1e1e1e;
+            --gray-medium: #333333;
+        }
+    }
+
+    body {
+        font-family: 'Inter', system-ui, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+    }
+
+    /* Navbar đồng bộ - Giữ nguyên sticky */
+    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1100; /* Tăng z-index để trên banner */
+    }
+
+    nav {
+        margin: 0 auto;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a { color: var(--text); text-decoration: none; font-weight: 500; margin-left: 1.5rem; }
+    nav a:hover { color: var(--primary); }
+    .logo a { margin-left: 0; color: var(--primary) !important; font-size: 1.3rem; }
+
+    /* BANNER CONTEST - THÊM MỚI VÀ STICKY */
+    .contest-banner {
+        background-color: var(--error);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #c0392b;
+        position: sticky; /* HÍT */
+        top: 60px;       /* DƯỚI NAV */
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+    }
+
+    /* Layout rộng cho Leaderboard */
+    .container { 
+        width: 95%; 
+        max-width: 1400px; 
+        margin: 2rem auto; 
+        padding: 0 1rem; 
+    }
+
+    .header-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 10px;
+    }
+
+    .header-box h1 { margin: 0; color: var(--primary); font-size: 1.8rem; }
+
+    /* Table Style - Giữ nguyên */
+    .rank-table-wrapper {
+        background: var(--gray-light);
+        border-radius: 12px;
+        border: 1px solid var(--gray-medium);
+        overflow-x: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { 
+        background: var(--gray-medium); 
+        padding: 12px; 
+        text-align: center; 
+        font-size: 0.8rem; 
+        text-transform: uppercase; 
+        color: var(--text);
+    }
+    td { 
+        padding: 12px; 
+        border-bottom: 1px solid var(--gray-medium); 
+        text-align: center; 
+        font-family: 'Fira Code', monospace;
+    }
+
+    .col-rank { width: 50px; font-weight: bold; background: rgba(52, 152, 219, 0.1); }
+    .col-user { text-align: left; min-width: 150px; font-family: 'Inter', sans-serif; padding-left: 20px; }
+    .col-total { font-weight: 800; color: var(--success); background: rgba(46, 204, 113, 0.1); }
+
+    /* Score colors */
+    .score-full { color: var(--success); font-weight: bold; }
+    .score-partial { color: #f39c12; font-weight: bold; }
+    .score-zero { opacity: 0.3; }
+
+    .btn-back {
+        text-decoration: none;
+        font-size: 0.9rem;
+        color: var(--primary);
+        font-weight: 600;
+    }
+        .contest-banner {
+        background-color: var(--error);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #c0392b;
+        position: sticky; /* THÊM MỚI */
+        top: 60px;       /* THÊM MỚI - Hít dưới Navbar */
+        z-index: 999;    /* THÊM MỚI - Nằm trên bảng */
+    }
+    </style>
+</head>
+<body>
+    <div class="nav-wrapper">
+        <nav>
+            <div class="logo">
+                <a href="/"><strong>DSMOJ</strong> <small>v1.1</small></a>
+            </div>
+            <div class="menu">
+                <a href="/problems/">Problems</a>
+                <a href="/contests/">Contests</a>
+                <a href="/submissions/">Submissions</a>
+                <a href="/rankings/">Rankings</a>
+                {% if user.is_authenticated %}<a href="/profile/{{user.username}}">{{ user.username }}</a>{% endif %}
+            </div>
+        </nav>
+    </div>
+
+{% if active_contest %}
+    {% if show_contest_mode %}
+    <div class="contest-banner" style="background: var(--error); display: flex; justify-content: space-between; padding: 10px 20px; position: sticky">
+        <span>🎯 CHẾ ĐỘ THI ĐẤU: {{ active_contest.title }}</span>
+        <a href="{% url 'toggle_focus' %}" style="background: white; color: var(--error); padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            XEM KHO ĐỀ CHUNG
+        </a>
+    </div>
+    {% else %}
+    <div class="contest-banner" style="background: yellow; display: flex; justify-content: space-between; padding: 10px 20px; position: sticky">
+        <span style="color: #1a1a1a;">📋 BẠN ĐANG XEM KHO ĐỀ CHUNG</span>
+        <a href="{% url 'toggle_focus' %}" style="background: #1a1a1a; color: white; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            QUAY LẠI PHÒNG THI
+        </a>
+    </div>
+    {% endif %}
+{% endif %}
+
+    <div class="container">
+        <div class="header-box">
+            <div>
+                <h1>🏆 Bảng xếp hạng: {{ contest.title }}</h1>
+                <p style="margin: 5px 0 0 0; opacity: 0.7;">Chế độ tính điểm: OI (Lấy điểm cao nhất mỗi bài)</p>
+            </div>
+            <a href="/contest/{{ contest.id }}/" class="btn-back">← Quay lại danh sách bài tập</a>
+        </div>
+
+        <div class="rank-table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-rank">#</th>
+                        <th class="col-user">Coder</th>
+                        {% for p in problems %}
+                            <th title="{{ p.title }}">{{ p.problem_code }}</th>
+                        {% endfor %}
+                        <th class="col-total">TỔNG</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in leaderboard %}
+                    <tr>
+                        <td class="col-rank">{{ forloop.counter }}</td>
+                        <td class="col-user"><strong>{{ row.username }}</strong></td>
+                        
+                        {% for p in problems %}
+                            {% with score=row.scores|get_score:p.problem_code %}
+                            <td class="{% if score >= 100 %}score-full{% elif score > 0 %}score-partial{% else %}score-zero{% endif %}">
+                                {{ score|floatformat:1 }}
+                            </td>
+                            {% endwith %}
+                        {% endfor %}
+
+                        <td class="col-total">{{ row.total_score|floatformat:1 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{{ problems|length|add:3 }}" style="padding: 3rem; opacity: 0.5;">
+                            Chưa có ai nộp bài. 
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

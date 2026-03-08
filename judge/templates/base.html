@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSMOJ</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+            :root {
+        --bg: #ffffff; --text: #1a1a1a; --primary: #3498db; --success: #2ecc71;
+        --error: #e74c3c; --gray-light: #f8f9fa; --gray-medium: #e9ecef; 
+        --code-bg: #2d3436; --warning: #f39c12;
+        --level-0: var(--gray-medium);
+        --level-1: #c6e48b;
+        --level-2: #7bc96f;
+        --level-3: #239a3b;
+        --level-4: #196127;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root { 
+            --bg: #121212; --text: #e0e0e0; --gray-light: #1e1e1e; --gray-medium: #333333;
+            --level-0: #1a1a1a;
+        }
+    }
+
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--text); background: var(--bg); margin: 0; }
+    
+    .nav-wrapper { width: 100%; background: var(--bg); border-bottom: 1px solid var(--gray-medium); position: sticky; top: 0; z-index: 1000; }
+    nav{ margin: 0 auto; padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+    nav a { color: var(--text); text-decoration: none; font-weight: 500; margin-left: 1.5rem; }
+    .logo a { color: var(--primary) !important; font-size: 1.3rem; margin: 0; }
+
+    .container { max-width: 1000px; margin: 2.5rem auto; padding: 0 1.2rem; display: grid; grid-template-columns: 1fr 2.5fr; gap: 2rem; }
+    @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+
+    /* Profile Sidebar */
+    .sidebar { text-align: center; }
+    .avatar { width: 150px; height: 150px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 1rem; object-fit: cover; }
+    .user-info h1 { margin: 0; font-size: 1.5rem; }
+    .rating { font-size: 1.2rem; font-weight: bold; color: var(--warning); margin-bottom: 1rem; }
+
+    /* Content Cards */
+    .card { background: var(--gray-light); border: 1px solid var(--gray-medium); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .card-title { font-weight: 900; font-size: 0.8rem; text-transform: uppercase; color: #7f8c8d; margin-bottom: 1rem; border-bottom: 1px solid var(--gray-medium); padding-bottom: 0.5rem; display: flex; justify-content: space-between; }
+
+    /* Heatmap Styles */
+    .heatmap-container { overflow-x: auto; padding: 10px 0; }
+    #heatmap svg { display: block; margin: 0 auto; max-width: 100%; }
+    .day { shape-rendering: crispEdges; }
+    .month-label, .wday-label { font-size: 10px; fill: #7f8c8d; }
+
+    /* Form & Stats (giữ nguyên) */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; text-align: center; }
+    .stat-item { padding: 1rem; background: var(--bg); border-radius: 8px; border: 1px solid var(--gray-medium); }
+    .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+    .stat-label { font-size: 0.8rem; color: gray; }
+
+    .form-group { margin-bottom: 1rem; text-align: left; }
+    label { display: block; font-size: 0.9rem; margin-bottom: 0.3rem; font-weight: 600; }
+    input, textarea { width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--gray-medium); background: var(--bg); color: var(--text); box-sizing: border-box; }
+    
+    .btn { padding: 0.6rem 1.2rem; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; transition: opacity 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-danger { background: var(--error); color: white; }
+    .btn:hover { opacity: 0.8; }
+    .danger-zone { border: 1px solid var(--error); background: rgba(231, 76, 60, 0.05); }
+        :root {
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --primary: #3498db;
+        --success: #2ecc71;
+        --error: #e74c3c;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+        --code-bg: #2d3436;
+        --sidebar-width: 280px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --gray-light: #1e1e1e;
+            --gray-medium: #333333;
+        }
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: var(--bg);
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    /* Full-width Navbar Fix */
+    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    nav {
+        margin: 0 auto;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a { 
+        color: var(--text); 
+        text-decoration: none; 
+        font-weight: 500;
+        margin-left: 1.5rem;
+    }
+        nav a:hover { color: var(--primary); }
+
+    .logo a { 
+        margin-left: 0; 
+        color: var(--primary) !important; 
+        font-size: 1.3rem;
+    }
+    .badge{
+        border: 2px solid var(--gray-medium);
+        padding: 2px;
+        border-radius: 5px;
+        background-color: #121212;
+        font-size: 12px;
+    }
+
+    /* Layout chính chia 2 cột */
+    .main-layout {
+        display: flex;
+        margin: 2rem;
+        gap: 2rem;
+        padding: 0 1.2rem;
+        align-items: flex-start;
+    }
+
+    /* Cột trái: Đề bài */
+    .problem-container { 
+        flex: 1;
+        background: var(--gray-light); 
+        padding: 2.5rem; 
+        border-radius: 12px; 
+        border: 1px solid var(--gray-medium); 
+    }
+
+    /* Cột phải: Thông tin thêm & Submit */
+.extra_information {
+        width: var(--sidebar-width);
+        position: sticky;
+        /* Nếu có banner contest (cao ~50px) + navbar (cao ~60px), 
+           thì top phải tầm 120px để không bị đè */
+        top: 120px; 
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        align-self: flex-start; /* CỰC KỲ QUAN TRỌNG: Để sticky hoạt động trong Flexbox */
+        height: fit-content;    /* Đảm bảo chiều cao không bị kéo dãn theo cột trái */
+    }
+    .info-card {
+        background: var(--gray-light);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--gray-medium);
+    }
+
+    h1 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--gray-medium); padding-bottom: 0.5rem; }
+    
+    code { background: var(--gray-medium); padding: 2px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 0.9em; }
+    pre { background: var(--code-bg); color: #ecf0f1; padding: 1.2rem; border-radius: 8px; overflow-x: auto; }
+    
+    .btn-submit { 
+        display: block;
+        text-align: center;
+        background: var(--success); /* Đổi sang màu xanh lá cho nó nổi bật nút nộp bài */
+        color: white !important; 
+        padding: 15px; 
+        border-radius: 8px; 
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); filter: brightness(1.1); }
+    .btn-submit:active { transform: scale(0.98); }
+
+    .stats-card { background: #1a1a1a; border-radius: 8px; border: 1px solid #333; margin-bottom: 1.5rem; }
+    .stats-content { display: flex; flex-direction: column; padding: 12px; gap: 8px; }
+    .stat-item {
+        background: #262626; color: #e0e0e0; padding: 8px 12px;
+        border-radius: 4px; font-size: 0.85rem; display: flex; align-items: center;
+        gap: 10px; border: 1px solid #3a3a3a;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 900px) {
+        .main-layout { flex-direction: column; }
+        .extra_information { width: 100%; position: static; }
+    }
+    /* ITEM DUY NHẤT MỚI: BANNER CONTEST */
+    .contest-banner {
+        background-color: var(--error);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #c0392b;
+        position: sticky;
+    }
+    .contest-banner {
+        width: 100%;
+        z-index: 999;
+        position: sticky;
+        top: 60px; /* PHẢI CÓ CÁI NÀY: Nó sẽ hít vào ngay dưới Navbar (giả sử Navbar cao ~60px) */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        box-sizing: border-box; /* Đảm bảo padding không làm tràn chiều rộng */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+            :root {
+        --bg: #ffffff; --text: #1a1a1a; --primary: #3498db; --success: #2ecc71;
+        --error: #e74c3c; --gray-light: #f8f9fa; --gray-medium: #e9ecef; --code-bg: #2d3436;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root { --bg: #121212; --text: #e0e0e0; --gray-light: #1e1e1e; --gray-medium: #333333; }
+    }
+
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--text); background: var(--bg); margin: 0; }
+    
+    .nav-wrapper { width: 100%; background: var(--bg); border-bottom: 1px solid var(--gray-medium); position: sticky; top: 0; z-index: 1000; }
+    nav { max-width: 900px; margin: 0 auto; padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+    nav a { color: var(--text); text-decoration: none; font-weight: 500; margin-left: 1.5rem; }
+    .logo a { color: var(--primary) !important; font-size: 1.3rem; margin: 0; }
+
+    .container { max-width: 500px; margin: 4rem auto; padding: 0 1.2rem; }
+
+    /* Tái sử dụng style banner nhưng làm gọn lại cho Form */
+    .form-card {
+        padding: 2.5rem;
+        border-radius: 12px;
+        background: var(--gray-light);
+        border: 1px solid var(--gray-medium);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    h1 { font-size: 1.8rem; font-weight: 900; margin-bottom: 1.5rem; text-align: center; }
+
+    /* Style các ô nhập liệu */
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: gray; text-transform: uppercase; margin-bottom: 0.5rem; }
+    
+    input[type="password"], input[type="text"] {
+        width: 100%;
+        padding: 0.8rem;
+        border-radius: 8px;
+        border: 1px solid var(--gray-medium);
+        background: var(--bg);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 1rem;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+
+    input:focus { outline: none; border-color: var(--primary); }
+
+    .help-text { font-size: 0.75rem; color: #7f8c8d; margin-top: 0.4rem; display: block; }
+    .error-list { color: var(--error); font-size: 0.85rem; list-style: none; padding: 0; margin: 0.5rem 0; }
+
+    .btn-submit {
+        width: 100%;
+        padding: 0.9rem;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        margin-top: 1rem;
+    }
+    .btn-submit:hover { opacity: 0.9; }
+
+    .back-link { display: block; text-align: center; margin-top: 1.5rem; color: gray; text-decoration: none; font-size: 0.9rem; }
+    .back-link:hover { color: var(--primary); }
+    :root {
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --primary: #3498db;
+        --success: #2ecc71;
+        --error: #e74c3c;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+        --code-bg: #2d3436;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --gray-light: #1e1e1e;
+            --gray-medium: #333333;
+        }
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: var(--bg);
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Navbar cũ của đại ca - Giữ nguyên, đảm bảo sticky hoạt động */
+    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    nav {
+        margin: 0 auto;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a { 
+        color: var(--text); 
+        text-decoration: none; 
+        font-weight: 500;
+        margin-left: 1.5rem;
+    }
+
+    nav a:hover { color: var(--primary); }
+
+    .logo a { 
+        margin-left: 0; 
+        color: var(--primary) !important; 
+        font-size: 1.3rem;
+    }
+
+    /* CSS Bảng cũ - Giữ nguyên */
+    table { 
+        width: 80%; 
+        border-collapse: collapse;
+        background: var(--gray-light);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--gray-medium);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        margin: auto; 
+        margin-top: 20px;
+    }
+
+    th { 
+        background: var(--primary); 
+        color: white; 
+        text-align: left; 
+        padding: 15px; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        font-size: 0.85rem; 
+    }
+
+    td { 
+        padding: 14px 15px; 
+        border-bottom: 1px solid var(--gray-medium); 
+        font-size: 0.95rem; 
+    }
+    
+    tr:nth-child(even) { background: rgba(0,0,0,0.02); }
+    @media (prefers-color-scheme: dark) {
+        td { background: #1e1e1e; color: #e0e0e0; }
+        tr:nth-child(even) td { background: #252525; }
+    }
+
+    .badge{
+        border: 2px solid var(--gray-medium);
+        padding: 0.5rem;
+        border-radius: 5px;
+        background-color: #121212;
+    }
+
+    a { color: white; text-decoration: none; }
+    a:hover { color: var(--primary); }
+
+    /* ITEM DUY NHẤT MỚI: BANNER CONTEST - Thêm sticky và top */
+    .contest-banner {
+        background-color: var(--error);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #c0392b;
+        position: sticky; /* THÊM MỚI */
+        top: 60px;       /* THÊM MỚI - Hít dưới Navbar */
+        z-index: 999;    /* THÊM MỚI - Nằm trên bảng */
+    }
+        :root {
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --primary: #3498db;
+        --success: #2ecc71;
+        --warning: #f1c40f;
+        --error: #e74c3c;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+        --code-bg: #2d3436;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --gray-light: #1e1e1e;
+            --gray-medium: #333333;
+        }
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: var(--bg);
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Navbar */
+      .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    /* Full-width Navbar Fix */
+    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    nav {
+        margin: 0 auto;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a { 
+        color: var(--text); 
+        text-decoration: none; 
+        font-weight: 500;
+        margin-left: 1.5rem;
+    }
+        nav a:hover { color: var(--primary); }
+
+    .logo a { 
+        margin-left: 0; 
+        color: var(--primary) !important; 
+        font-size: 1.3rem;
+    }
+    .badge{
+        border: 2px solid var(--gray-medium);
+        padding: 2px;
+        border-radius: 5px;
+        background-color: #121212;
+        font-size: 12px;
+    }
+
+    /* Layout */
+    .container {
+        max-width: 1100px;
+        margin: 2rem auto;
+        padding: 0 1.2rem;
+    }
+
+    h2 { 
+        margin-top: 2.5rem; 
+        color: var(--text); 
+        display: flex; 
+        align-items: center; 
+        gap: 10px;
+        border-left: 4px solid var(--primary);
+        padding-left: 15px;
+    }
+
+    /* Table Styles */
+    .table-wrapper {
+        background: var(--gray-light);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--gray-medium);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--gray-medium); color: var(--text); text-align: left; padding: 15px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+    td { padding: 15px; border-bottom: 1px solid var(--gray-medium); font-size: 0.95rem; }
+    
+    tr:last-child td { border-bottom: none; }
+    
+    @media (prefers-color-scheme: dark) {
+        td { background: #1e1e1e; color: #e0e0e0; }
+        th { background: #252525; }
+    }
+
+    /* Status Badges */
+    .status-live { color: var(--success); font-weight: bold; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    
+    .status-upcoming { color: var(--primary); font-weight: bold; }
+    .status-past { color: #888; }
+
+    /* Button System */
+    .btn-join {
+        display: inline-block;
+        background: var(--primary);
+        color: white !important;
+        padding: 8px 18px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none !important;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+    }
+
+    .btn-join:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn-success { background: var(--success); }
+    .btn-disabled { background: #7f8c8d; cursor: not-allowed; }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .empty-msg { padding: 20px; text-align: center; color: #888; font-style: italic; }
+    
+    /* Messages (Alerts) */
+    .messages {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    .message {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    .message.success { background: rgba(46, 204, 113, 0.2); color: var(--success); border: 1px solid var(--success); }
+    .message.error { background: rgba(231, 76, 60, 0.2); color: var(--error); border: 1px solid var(--error); }
+    </style>
+</head>
+<body>
+
+    <div class="nav-wrapper">
+        <nav>
+            <div class="logo">
+                <a href="/"><strong>DSMOJ</strong> <small>v1.1</small></a>
+            </div>
+            <div class="menu">
+                <a href="/problems/">Problems</a>
+                <a href="/contests/">Contests</a>
+                <a href="/submissions/">Submissions</a>
+                <a href="/rankings/">Rankings</a>
+                {% if user.is_authenticated %}
+                    <a href="/profile/{{user.username}}">{{ user.username }}</a>
+                {% else %}
+                    <a href="/login/">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+
+{% if active_contest %}
+    {% if show_contest_mode %}
+    <div class="contest-banner" style="background: var(--error); display: flex; justify-content: space-between; padding: 10px 20px;">
+        <span>🎯 CHẾ ĐỘ THI ĐẤU: {{ active_contest.title }}</span>
+        <a href="{% url 'toggle_focus' %}" style="background: white; color: var(--error); padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            XEM KHO ĐỀ CHUNG
+        </a>
+    </div>
+    {% else %}
+    <div class="contest-banner" style="background: yellow; display: flex; justify-content: space-between; padding: 10px 20px;">
+        <span style="color: #1a1a1a;">📋 BẠN ĐANG XEM KHO ĐỀ CHUNG</span>
+        <a href="{% url 'toggle_focus' %}" style="background: white; color: #1a1a1a; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            QUAY LẠI PHÒNG THI
+        </a>
+    </div>
+    {% endif %}
+{% endif %}
+</body>

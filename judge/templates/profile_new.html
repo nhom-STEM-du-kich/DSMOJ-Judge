@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile: {{ user.username }} - DSMOJ</title>
+    
+    <style>
+    :root {
+        --bg: #ffffff; --text: #1a1a1a; --primary: #3498db; --success: #2ecc71;
+        --error: #e74c3c; --gray-light: #f8f9fa; --gray-medium: #e9ecef; 
+        --code-bg: #2d3436; --warning: #f39c12;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root { --bg: #121212; --text: #e0e0e0; --gray-light: #1e1e1e; --gray-medium: #333333; }
+    }
+
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--text); background: var(--bg); margin: 0; }
+    
+    .nav-wrapper { width: 100%; background: var(--bg); border-bottom: 1px solid var(--gray-medium); position: sticky; top: 0; z-index: 1000; }
+    nav { max-width: 900px; margin: 0 auto; padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+    nav a { color: var(--text); text-decoration: none; font-weight: 500; margin-left: 1.5rem; }
+    .logo a { color: var(--primary) !important; font-size: 1.3rem; margin: 0; }
+
+    .container { max-width: 900px; margin: 2.5rem auto; padding: 0 1.2rem; display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+
+    /* Profile Sidebar */
+    .sidebar { text-align: center; }
+    .avatar { width: 150px; height: 150px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 1rem; object-fit: cover; }
+    .user-info h1 { margin: 0; font-size: 1.5rem; }
+    .rating { font-size: 1.2rem; font-weight: bold; color: var(--warning); margin-bottom: 1rem; }
+
+    /* Content Cards */
+    .card { background: var(--gray-light); border: 1px solid var(--gray-medium); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .card-title { font-weight: 900; font-size: 1rem; text-transform: uppercase; color: #7f8c8d; margin-bottom: 1rem; border-bottom: 1px solid var(--gray-medium); padding-bottom: 0.5rem; }
+
+    /* Form Styles */
+    .form-group { margin-bottom: 1rem; text-align: left; }
+    label { display: block; font-size: 0.9rem; margin-bottom: 0.3rem; font-weight: 600; }
+    input, textarea { width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--gray-medium); background: var(--bg); color: var(--text); box-sizing: border-box; }
+    
+    .btn { padding: 0.6rem 1.2rem; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; transition: opacity 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-danger { background: var(--error); color: white; }
+    .btn:hover { opacity: 0.8; }
+
+    /* Heatmap/Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; text-align: center; }
+    .stat-item { padding: 1rem; background: var(--bg); border-radius: 8px; border: 1px solid var(--gray-medium); }
+    .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+    .stat-label { font-size: 0.8rem; color: gray; }
+
+    /* Danger Zone */
+    .danger-zone { border: 1px solid var(--error); background: rgba(231, 76, 60, 0.05); }
+    </style>
+</head>
+<body>
+
+<div class="nav-wrapper">
+    <nav>
+        <div class="logo"><a href="/"><strong>DSMOJ</strong></a></div>
+        <div class="menu">
+            <a href="/problems/">Problems</a>
+            <a href="/submissions/">Submissions</a>
+            <a href="/rankings/">Rankings</a>
+            <a href="/profile/" style="border-bottom: 2px solid var(--primary);">{{ user.username }}</a>
+        </div>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="sidebar">
+        <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="avatar">
+        <div class="user-info">
+            <h1>{{ user.username }}</h1>
+            <div class="rating">Rating: {{ user.profile.rating }}</div>
+            <p style="color: gray; font-size: 0.9rem;">{{ user.profile.bio|default:"Chưa có tiểu sử. Đang bận phân tích DSP..." }}</p>
+        </div>
+        <div class="stats-grid" style="margin-top: 2rem;">
+            <div class="stat-item">
+                <div class="stat-value">{{ solved_count }}</div>
+                <div class="stat-label">Solved</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ rank }}</div>
+                <div class="stat-label">Rank</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="card">
+            <div class="card-title">Cập nhật thông tin</div>
+            <form method="POST" enctype="multipart/form-data" action="{% url 'profile-update' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Tiểu sử (Bio)</label>
+                    <textarea name="bio" rows="3">{{ user.profile.bio }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Avatar</label>
+                    <input type="file" name="avatar">
+                </div>
+                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Bảo mật tài khoản</div>
+            <p style="font-size: 0.9rem; margin-bottom: 1rem;">Đổi mật khẩu định kỳ để bảo vệ dữ liệu trên DB rời.</p>
+            <a href="/{% url 'password_change' %}/{{user.username}}" class="btn btn-primary">Đổi mật khẩu</a>
+        </div>
+
+        <div class="card danger-zone">
+            <div class="card-title" style="color: var(--error);">Danger Zone</div>
+            <p style="font-size: 0.9rem;">Một khi đã xóa tài khoản, mọi dữ liệu bài làm (ngo trừ log của Architect) sẽ bị hỏa táng.</p>
+            <form method="POST" action="{% url 'user-delete' %}" onsubmit="return confirm('Xác nhận xóa tài khoản? Hành động này không thể hoàn tác (Nyquist Limit exceeded!)');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Xóa tài khoản vĩnh viễn</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
