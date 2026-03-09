@@ -41,8 +41,7 @@ def problem(request, problem_code):
         'show_contest_mode': show_contest_mode,
     }
     return render(request, 'problem.html', context)
-    
-    return render(request, 'problem.html', context)
+
 def problems(request):
     now = timezone.now()
     user = request.user
@@ -274,22 +273,6 @@ def contest_detail(request, contest_id):
         'contest': contest,
         'problems': problems, # Danh sách đã được "nhồi" điểm
     })
-def register_contest(request, contest_id):
-    if request.method == 'POST':
-        contest = get_object_or_404(Contest, id=contest_id)
-        
-        if timezone.now() > contest.end_time:
-            messages.error(request, "Hết giờ đăng ký rồi đại ca!")
-            return redirect('contest_list')
-
-        # Thêm User vào danh sách participants
-        if request.user not in contest.participants.all():
-            contest.participants.add(request.user)
-            messages.success(request, "Đã ghi danh! Xách phím lên và thi thôi.")
-        else:
-            messages.info(request, "Đại ca có tên trong danh sách rồi, đừng lo!")
-
-    return redirect('contest_detail', contest_id=contest_id)
 @login_required
 def register_contest(request, contest_id):
     if request.method == 'POST':
@@ -403,3 +386,33 @@ def home_view(request):
     }
     
     return render(request, 'home.html', context)
+def problem_print(request, problem_code):
+# 1. Lấy bài tập (nếu không có thì 404 luôn)
+    problem = get_object_or_404(Problem, problem_code=problem_code)
+    now = timezone.now()
+    user = request.user
+    
+    # 1. Lấy Contest mà User đang tham gia
+    active_contest = None
+    if user.is_authenticated:
+        active_contest = user.contests_joined.filter(
+            start_time__lte=now, 
+            end_time__gte=now
+        ).first()
+
+    # 2. Lấy trạng thái Focus từ Session
+    show_contest_mode = request.session.get('is_focused', True)
+
+    # 3. ĐỒNG BỘ: Nếu đang Focus vào Contest, check xem bài này có trong Contest đó không
+    if active_contest and show_contest_mode:
+        if not active_contest.problem.filter(id=problem.id).exists():
+            # Nếu bài này không có trong contest, đẩy về trang danh sách contest
+            messages.warning(request, "Bài này không nằm trong cuộc thi hiện tại!")
+            return redirect('problems_list')
+
+    context = {
+        'problem': problem,
+        'active_contest': active_contest,
+        'show_contest_mode': show_contest_mode,
+    }
+    return render(request, 'view_printed_problemset.html', context)
