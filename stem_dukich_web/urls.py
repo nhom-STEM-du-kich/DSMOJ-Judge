@@ -33,7 +33,7 @@ urlpatterns = [
     # Problems & Submissions (Thêm / vào cuối hết cho tôi)
     path('problems/', views.problems, name="problems_list"),
     path('problem/<str:problem_code>/', views.problem),
-    path('problems/<str:problem_code>/printed_view/', views.problem_print),
+    path('problem/<str:problem_code>/printed_view/', views.problem_print),
     path('submit/<str:problem_code>/', views.submit_code),
     path('submissions/', views.submissions),
     path('submissions/<int:id>/', views.submission),
