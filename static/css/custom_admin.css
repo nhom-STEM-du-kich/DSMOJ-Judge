@@ -1,0 +1,27 @@
+/* Ép tất cả ảnh Avatar trong User Menu về khổ vuông */
+.user-panel .image img, .navbar-nav .user-image {
+    width: 50px; /* Hoặc kích thước ông muốn */
+    height: 50px;
+    object-fit: cover; /* Cực kỳ quan trọng: Nó sẽ tự crop giữa */
+    object-position: center; /* Giữ chủ thể ở trung tâm */
+    border-radius: 50%; /* Nếu ông thích Avatar tròn */
+}
+.card {
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+/* Bo góc cho các nút bấm */
+.btn {
+    border-radius: 20px !important; 
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Biến dropdown Action thành một cái menu xịn */
+.actions select {
+    border-radius: 8px;
+    padding: 5px;
+}

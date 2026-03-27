@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import loader
-from .models import Problem, Submission,Profile, Contest, Blog
+from .models import Problem, Submission,Profile, Contest, Blog, JudgeNode
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -9,6 +9,10 @@ from django.contrib import messages
 from django.db.models.functions import TruncDate
 from django.db.models import Count
 from django.utils import timezone
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+from django.db import transaction
 # Create your views here.
 
 def problem(request, problem_code):
@@ -94,60 +98,80 @@ def submit_code(request, problem_code):
     # Nếu là GET thì chỉ hiện cái form lên thôi
     problem = Problem.objects.get(problem_code=problem_code)
     return render(request, "submit.html", {"problem": problem})
+
+
 def get_task(request):
-    # 1. Tìm bài đang đợi (Pending) sớm nhất
-    task = Submission.objects.filter(status="PD").order_by("created_at").first()
+    # 1. Soi chứng minh thư của Judge
+    api_key = request.headers.get('X-DSMOJ-Auth')
+    judge = JudgeNode.objects.filter(api_key=api_key, is_online=True).first()
     
-    # 2. Kiểm tra sinh mạng của task trước khi làm thịt
-    if not task:
-        return JsonResponse({"status": "empty"})
+    if not judge:
+        return JsonResponse({"status": "error", "msg": "API KEY NOT FOUND"}, status=403)
+
+    with transaction.atomic():
+        task = (
+            Submission.objects
+            .select_for_update(skip_locked=True)
+            .filter(status="PD")
+            .order_by("created_at")
+            .first()
+        )
+
+        if not task:
+            return JsonResponse({"status": "empty"})
+
+        task.status = "JG"
+        # Lưu lại thằng nào đang chấm bài này để sau này dễ "truy cứu"
+        task.judge_node = judge 
+        task.save()
 
     try:
-        # 3. Bốc dữ liệu bài toán tương ứng
         problem = Problem.objects.get(problem_code=task.problem_code)
-        
-        # 4. Đánh dấu đang chấm (JG - Judging) để tránh tranh chấp giữa các Worker
-        task.status = "JG"
-        task.save()
-        
-        # 5. Trả về payload High-Fidelity cho Worker
+
         return JsonResponse({
             "status": "success",
             "id": task.id,
             "code": task.code,
             "lang": task.language,
-            "testcases": problem.test_cases, # JSON thần thánh
+            "testcases": problem.test_cases,
             "time_limit": problem.time_limit,
-            "test_view": problem.show_test,  # Trả về cho thằng Judge quyết định hiển thị
+            "test_view": problem.show_test,
         })
-        
+
     except Problem.DoesNotExist:
-        # Nếu bài nộp trỏ về một Problem không tồn tại (Lỗi rác DB)
-        task.status = "ER" # Đánh dấu Error luôn cho rảnh nợ
+        task.status = "ER"
         task.save()
-        return JsonResponse({"status": "error", "msg": f"Problem {task.problem_code} not found"})
-            
-    return JsonResponse({"status": "empty"}) # Hết việc rồi, nghỉ tí đi
-@csrf_exempt # Cho phép máy ngoài gửi POST vào mà không cần token web
+        return JsonResponse({"status": "error"})
+@csrf_exempt
 def update_result(request, sub_id):
     if request.method == "POST":
-        sub = Submission.objects.get(id=sub_id)
-        
-        # Đọc dữ liệu JSON từ thân Request
-        data = json.loads(request.body)
-        
-        sub.status = data.get("status") # AC, WA, TLE, CE...
-        sub.result_log = data.get("log") # Lưu nhật ký "mất dạy" của thí sinh
-        sub.score = data.get("score")
-        sub.save()
-        if sub.status == "AC":
-            user_submission = Profile.objects.get(user =sub.user)
-            problem = Problem.objects.get(problem_code=sub.problem_code)
-            if problem not in user_submission.solved_problems.all():
-                user_submission.solved_problems.add(problem)
-                user_submission.rating += problem.difficulty
-                user_submission.save()
-        return JsonResponse({"status": "success", "msg": "Success, bruv!"})
+        # 1. Xác thực Judge gửi kết quả
+        api_key = request.headers.get('X-DSMOJ-Auth')
+        if not JudgeNode.objects.filter(api_key=api_key, is_online=True).exists():
+            return JsonResponse({"status": "error", "msg": ""}, status=403)
+
+        try:
+            sub = Submission.objects.get(id=sub_id)
+            data = json.loads(request.body)
+            
+            sub.status = data.get("status")
+            sub.result_log = data.get("log")
+            sub.score = data.get("score")
+            sub.save()
+
+            # Logic cộng điểm cho User (như cũ)
+            if sub.status == "AC":
+                profile = sub.user.profile # Nên dùng quan hệ 1-1 cho gọn
+                problem = Problem.objects.get(problem_code=sub.problem_code)
+                if problem not in profile.solved_problems.all():
+                    profile.solved_problems.add(problem)
+                    profile.rating += problem.difficulty
+                    profile.save()
+
+            return JsonResponse({"status": "success", "msg": "success"})
+            
+        except Submission.DoesNotExist:
+            return JsonResponse({"status": "error", "msg": "Bài nộp không tồn tại!"}, status=404)
 def submissions(request):
     submissions = Submission.objects.all().order_by('created_at').reverse()
     template = loader.get_template("submissions.html")
@@ -416,3 +440,26 @@ def problem_print(request, problem_code):
         'show_contest_mode': show_contest_mode,
     }
     return render(request, 'view_printed_problemset.html', context)
+def register_view(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Khởi tạo Node thành công!")
+            return redirect("home")
+        messages.error(request, "Lỗi dữ liệu! Kiểm tra lại Key.")
+    return render(request, "register.html")
+
+def login_view(request):
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect("home")
+        messages.error(request, "Sai Username hoặc Key!")
+    return render(request, "login.html")

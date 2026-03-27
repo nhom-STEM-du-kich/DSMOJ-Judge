@@ -53,9 +53,16 @@ urlpatterns = [
 
     # Rankings chung
     path('rankings/', views.ranks),
-    path('', views.home_view),
+    path('', views.home_view, name="home"),
+
+    #Login and Registration.
+    path('register/', views.register_view, name='register'),
+    path('login/', views.login_view, name='login'),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ]
 if not settings.DEBUG:
     urlpatterns += [
         re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

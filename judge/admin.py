@@ -1,12 +1,35 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Problem, Category, Submission, Profile, Contest, Group, Blog
+from .models import Problem, Category, Submission, Profile, Contest, Group, Blog, JudgeNode
 from markdownx.admin import MarkdownxModelAdmin
 admin.site.register(Category)
-admin.site.register(Submission)
-from django.utils.safestring import mark_safe
+@admin.action(description='Đặt lại các bài tập đã chọn thành Pending')
+def reset_to_pending(modeladmin, request, queryset):
+    # Cập nhật hàng loạt trường status thành 'P' (hoặc giá trị Pending trong ChoiceField của ông)
+    updated = queryset.update(status='PD') # Giả sử field là status
+    
+    # Thông báo cho Admin biết đã "hồi sinh" bao nhiêu bài
+    modeladmin.message_user(request, f"Đã reset {updated} bài nộp về trạng thái chờ chấm.")
 
+class SubmissionAdmin(admin.ModelAdmin):
+    # Những cột nào sẽ hiện ra ở danh sách
+    list_display = ('id', 'user', 'problem_code', 'status', 'created_at')
+    
+    # Bộ lọc bên phải (Cực kỳ hữu ích để lọc xem ai vừa bị WA bài Quỳnh)
+    list_filter = ('status', 'problem_code','contest', 'created_at')
+    
+    # Ô tìm kiếm (Tìm theo Username hoặc Mã bài tập)
+    search_fields = ('user__username', 'problem_code')
+    
+    # Cho phép sửa nhanh trạng thái ngay tại danh sách
+    list_editable = ('status',)
+    
+    # Phân trang (Tránh load 1 triệu submission làm lag server)
+    list_per_page = 20
+    actions = [reset_to_pending]
+admin.site.register(Submission, SubmissionAdmin)
+from django.utils.safestring import mark_safe
 class MarkdownxKaTeXMixin:
     # Media giữ nguyên như cũ...
     class Media:
@@ -23,47 +46,65 @@ class MarkdownxKaTeXMixin:
         response.render() 
         
         script = """
-        <script>
-            (function() {
-                function bootKaTeX() {
-                    console.log("KaTeX Booting..."); // Đại ca nhấn F12 để xem dòng này
-                    var previews = document.querySelectorAll('.markdownx-preview');
-                    if (previews.length > 0 && typeof renderMathInElement === 'function') {
-                        previews.forEach(function(el) {
-                            renderMathInElement(el, {
-                                delimiters: [
-                                    {left: "$$", right: "$$", display: true},
-                                    {left: "$", right: "$", display: false}
-                                ],
-                                throwOnError: false
-                            });
+                <script>
+                    (function() {
+                        let renderTimeout;
+
+                        function bootKaTeX() {
+                            // Dùng Debounce để tránh lag khi gõ nhanh
+                            clearTimeout(renderTimeout);
+                            renderTimeout = setTimeout(function() {
+                                var previews = document.querySelectorAll('.markdownx-preview');
+                                if (previews.length > 0 && typeof renderMathInElement === 'function') {
+                                    previews.forEach(function(el) {
+                                        try {
+                                            renderMathInElement(el, {
+                                                delimiters: [
+                                                    {left: "$$", right: "$$", display: true},
+                                                    {left: "$", right: "$", display: false}
+                                                ],
+                                                // Chiêu thức báo lỗi: Không crash, chỉ đổi màu đỏ chỗ lỗi
+                                                throwOnError: false,
+                                                errorColor: '#ff0000',
+                                                strict: 'warn'
+                                            });
+                                        } catch (err) {
+                                            console.error("KaTeX Error:", err);
+                                            el.innerHTML += '<div style="color:red; border:1px dashed red; padding:5px; margin-top:10px;">' +
+                                                            '⚠️ LaTeX Syntax Error! Check your formulas.</div>';
+                                        }
+                                    });
+                                }
+                            }, 300); // Đợi 300ms sau khi ngừng gõ mới render
+                        }
+
+                        // Lắng nghe sự kiện update của Markdownx (Chuẩn nhất)
+                        document.addEventListener('markdownx.update', bootKaTeX);
+
+                        // Khởi tạo lần đầu
+                        window.addEventListener('load', bootKaTeX);
+                        
+                        // Observer thông minh: Chỉ theo dõi nội dung của Preview
+                        var observer = new MutationObserver(function(mutations) {
+                            for (let mutation of mutations) {
+                                if (mutation.type === 'childList') {
+                                    bootKaTeX();
+                                    break; 
+                                }
+                            }
                         });
-                        console.log("KaTeX Rendered!");
-                    }
-                }
-
-                // Lắng nghe sự kiện update của Markdownx
-                document.addEventListener('markdownx.update', function() {
-                    setTimeout(bootKaTeX, 200); 
-                });
-
-                // Đợi toàn bộ trang và script nạp xong
-                window.addEventListener('load', function() {
-                    setTimeout(bootKaTeX, 500);
-                });
-                
-                // Chiêu cuối: Quan sát sự thay đổi của DOM (nếu AJAX render lại)
-                var observer = new MutationObserver(function(mutations) {
-                    bootKaTeX();
-                });
-                
-                var target = document.querySelector('.markdownx');
-                if (target) {
-                    observer.observe(target, { childList: true, subtree: true });
-                }
-            })();
-        </script>
-        """
+                        
+                        // Đợi element preview xuất hiện rồi mới observe
+                        var checkExist = setInterval(function() {
+                        var target = document.querySelector('.markdownx-preview');
+                        if (target) {
+                            observer.observe(target, { childList: true, characterData: true });
+                            clearInterval(checkExist);
+                        }
+                        }, 500);
+                    })();
+                </script>
+                """
         response.content = response.content.replace(b'</body>', script.encode('utf-8') + b'</body>')
         return response
 # Giờ thì dùng nó cho cả Problem và Profile
@@ -78,3 +119,13 @@ admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Contest)
 admin.site.register(Group)
 admin.site.register(Blog)
+class JudgeNodeAdmin(admin.ModelAdmin):
+    # Những trường hiện ở danh sách ngoài
+    list_display = ('name', 'ip_address', 'api_key', 'is_online', 'last_seen')
+    
+    # Ép Django hiện UUID trong trang chi tiết (vì editable=False)
+    readonly_fields = ('api_key', 'last_seen')
+    
+    # Cho phép lọc theo trạng thái online cho dễ quản lý
+    list_filter = ('is_online',)
+admin.site.register(JudgeNode, JudgeNodeAdmin)

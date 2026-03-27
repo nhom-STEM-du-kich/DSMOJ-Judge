@@ -110,8 +110,9 @@
 <body>
 
     <div class="no-print no-print-banner">
-        🚀 DSMOJ PRINT MODE - Sẵn sàng để in đề bài của {{ problem.author }}
-        <button onclick="window.print()" style="margin-left: 15px; cursor: pointer; padding: 5px 15px; border-radius: 4px; border: none; font-weight: bold;">PRINT (Ctrl+P)</button>
+        🚀 DSMOJ PRINT MODE - Sẵn sàng để in đề bài:
+        <button onclick="window.print()" style="margin-left: 1px; cursor: pointer; padding: 5px 15px; border-radius: 4px; border: none; font-weight: bold;">PRINT (Ctrl+P)</button>
+        hoặc <a href="/problem/{{problem.problem_code}}", style="color: white; text-decoration: none;">quay trở lại đề bài</a>
     </div>
 
     <div class="print-header">

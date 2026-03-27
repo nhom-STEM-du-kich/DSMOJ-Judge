@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSMOJ - System Login</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+    :root {
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --primary: #3498db;
+        --success: #2ecc71;
+        --error: #e74c3c;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+        --code-bg: #2d3436;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --gray-light: #1e1e1e;
+            --gray-medium: #333333;
+        }
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: var(--bg);
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    nav {
+        margin: 0 auto;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a { 
+        color: var(--text); 
+        text-decoration: none; 
+        font-weight: 500;
+        margin-left: 1.5rem;
+    }
+
+    nav a:hover { color: var(--primary); }
+
+    .logo a { 
+        margin-left: 0; 
+        color: var(--primary) !important; 
+        font-size: 1.3rem;
+    }
+
+    .container {
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         min-height: 80vh;
+         padding: 2rem;
+    }
+
+    .problem-submit { 
+        background: var(--gray-light); 
+        padding: 2.5rem; 
+        border-radius: 12px; 
+        border: 1px solid var(--gray-medium); 
+        width: 100%;
+        max-width: 450px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    h1 { 
+        margin-top: 0; 
+        color: var(--primary); 
+        border-bottom: 2px solid var(--gray-medium); 
+        padding-bottom: 0.5rem; 
+        font-size: 1.8rem;
+        text-align: center;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        border: 1px solid var(--gray-medium);
+        background: var(--bg);
+        color: var(--text);
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .input-field:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    .btn { 
+        width: 100%;
+        background: var(--primary); 
+        color: white !important; 
+        padding: 12px; 
+        border: none;
+        border-radius: 8px; 
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: transform 0.1s, background 0.2s;
+    }
+
+    .btn:hover {
+        background: #2980b9;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.85rem;
+    }
+
+    .auth-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    </style>
+</head>
+<body>
+
+    <div class="nav-wrapper">
+        <nav>
+            <div class="logo">
+                <a href="/"><strong>DSMOJ</strong> <small>v1.1</small></a>
+            </div>
+            <div class="menu">
+                <a href="/problems/">Problems</a>
+                <a href="/login/">Login</a>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="problem-submit">
+            <h1>System Login</h1>
+            
+            <form action="/login/" method="POST">
+                {% csrf_token %}
+                
+                <label for="username">Nomad ID (Username):</label>
+                <input type="text" id="username" name="username" class="input-field" placeholder="Nhập ID của đại ca..." required>
+
+                <label for="password">Security Key (Password):</label>
+                <input type="password" id="password" name="password" class="input-field" placeholder="Nhập mã bảo mật..." required>
+
+                <button type="submit" class="btn">
+                    ACCESS SYSTEM (LOG IN)
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Chưa có Node trên hệ thống? <a href="/register/">Khởi tạo ngay</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -3,14 +3,41 @@ from markdownx.models import MarkdownxField
 # Create your models here.
 from django.utils.text import slugify
 from django.contrib.auth.models import User
+from django.contrib.auth.models import User
+import uuid
+# Tuyệt chiêu: Thêm method trực tiếp vào User (Monkey Patching) 
+# hoặc nếu ông dùng AbstractUser thì viết thẳng vào class đó.
+class JudgeNode(models.Model):
+    name = models.CharField(max_length=100) # VD: "Node-Phu-Tin", "Node-Lab-PC01"
+    ip_address = models.GenericIPAddressField() # IP của máy chạy script
+    api_key = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.ip_address})"
+def get_user_avatar(self):
+    try:
+        # Nhảy sang Profile để lấy ảnh
+        if self.profile.avatar:
+            return self.profile.avatar.url
+    except:
+        pass
+    # Nếu tạch hết thì trả về ảnh mặc định của DSMOJ
+    return "/static/images/default_admin.png"
+
+# Gán cái hàm này vào Model User
+User.add_to_class("get_user_avatar", get_user_avatar)
+class Badges(models.Model):
+    name = models.CharField(max_length= 100, unique= True)
+    image = models.ImageField(upload_to='badge_pics')
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     avatar = models.ImageField(upload_to='profile_pics')
     bio = MarkdownxField(blank = True)
     rating = models.IntegerField(default=1500)  # Điểm Elo như Codeforces
     solved_problems = models.ManyToManyField('Problem', blank=True)
     github_url = models.URLField(max_length=200, blank=True)
-    
     def __str__(self):
         return f"{self.user.username}'s Profile"
 class Category(models.Model):
@@ -49,6 +76,8 @@ class Contest(models.Model):
     end_time = models.DateTimeField()
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='contests', null=True, blank=True)
     participants = models.ManyToManyField(User, related_name='contests_joined', blank=True)
+    def __str__(self):
+        return self.title
 
 class Submission(models.Model):
     STATUS_CHOICES = [
@@ -69,6 +98,14 @@ class Submission(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     contest = models.ForeignKey(Contest, on_delete=models.SET_NULL, null=True, blank=True)
     score = models.IntegerField(blank=True, null = True)
+    judging_started_at = models.DateTimeField(null=True)
+    judge_node = models.ForeignKey(
+        'JudgeNode', 
+        null=True, 
+        blank=True,
+        related_name='submissions',
+        on_delete=models.CASCADE,
+    )
 class Blog(models.Model):
     title = models.CharField(max_length=200, verbose_name="Tiêu đề")
     slug = models.SlugField(unique=True, blank=True, verbose_name="Slug (URL)")
