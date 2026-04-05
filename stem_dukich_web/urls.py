@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/update-result/<int:sub_id>/', views.update_result, name='update_result'),
     path('api/user-ui/focus-mode/', views.toggle_focus, name="toggle_focus"),
     path('markdownx/', include('markdownx.urls')),
+    path('api/ruok/', views.judge_status),
 
     # Problems & Submissions (Thêm / vào cuối hết cho tôi)
     path('problems/', views.problems, name="problems_list"),
@@ -54,6 +55,9 @@ urlpatterns = [
     # Rankings chung
     path('rankings/', views.ranks),
     path('', views.home_view, name="home"),
+    
+    #Status
+    path('status/', views.status),
 
     #Login and Registration.
     path('register/', views.register_view, name='register'),

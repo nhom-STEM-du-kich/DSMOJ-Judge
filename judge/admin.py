@@ -124,7 +124,7 @@ class JudgeNodeAdmin(admin.ModelAdmin):
     list_display = ('name', 'ip_address', 'api_key', 'is_online', 'last_seen')
     
     # Ép Django hiện UUID trong trang chi tiết (vì editable=False)
-    readonly_fields = ('api_key', 'last_seen')
+    readonly_fields = ('api_key', 'last_seen', 'supported_languages', 'languages_matrix')
     
     # Cho phép lọc theo trạng thái online cho dễ quản lý
     list_filter = ('is_online',)

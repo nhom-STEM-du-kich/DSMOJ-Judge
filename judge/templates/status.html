@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSMOJ - Problems</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+    :root {
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --primary: #3498db;
+        --success: #2ecc71;
+        --error: #e74c3c;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+        --code-bg: #2d3436;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --gray-light: #1e1e1e;
+            --gray-medium: #333333;
+        }
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: var(--bg);
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Navbar cũ của đại ca - Giữ nguyên, đảm bảo sticky hoạt động */
+    .nav-wrapper {
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--gray-medium);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    nav {
+        margin: 0 auto;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    nav a { 
+        color: var(--text); 
+        text-decoration: none; 
+        font-weight: 500;
+        margin-left: 1.5rem;
+    }
+
+    nav a:hover { color: var(--primary); }
+
+    .logo a { 
+        margin-left: 0; 
+        color: var(--primary) !important; 
+        font-size: 1.3rem;
+    }
+
+    /* CSS Bảng cũ - Giữ nguyên */
+    table { 
+        width: 80%; 
+        border-collapse: collapse;
+        background: var(--gray-light);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--gray-medium);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        margin: auto; 
+        margin-top: 20px;
+    }
+
+    th { 
+        background: var(--primary); 
+        color: white; 
+        text-align: left; 
+        padding: 15px; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        font-size: 0.85rem; 
+    }
+
+    td { 
+        padding: 14px 15px; 
+        border-bottom: 1px solid var(--gray-medium); 
+        font-size: 0.95rem; 
+    }
+    
+    tr:nth-child(even) { background: rgba(0,0,0,0.02); }
+    @media (prefers-color-scheme: dark) {
+        td { background: #1e1e1e; color: #e0e0e0; }
+        tr:nth-child(even) td { background: #252525; }
+    }
+
+  /* Badge thích ứng */
+    .badge {
+        border: 1px solid var(--gray-medium);
+        padding: 4px 8px;
+        border-radius: 6px;
+        background-color: var(--gray-light); /* Dùng biến để tự đổi màu nền */
+        color: var(--text); /* Tự đổi màu chữ */
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+        margin: 2px;
+    }
+
+    /* FIX CĂN BẢN: Màu link trong bảng */
+    td a { 
+        color: var(--primary); /* Để màu xanh cho dễ nhận biết là link */
+        text-decoration: none; 
+        font-weight: 600;
+    }
+    
+    td a:hover { 
+        text-decoration: underline; 
+    }
+
+    /* Màu chữ cho bảng trong Dark Mode */
+    @media (prefers-color-scheme: dark) {
+        td { background: #1e1e1e; color: #e0e0e0; }
+        tr:nth-child(even) td { background: #252525; }
+        .badge { background-color: #333; border-color: #444; }
+    }
+
+    /* Banner Contest - Sửa lại màu nút cho khớp với banner vàng */
+    .contest-banner a { 
+        color: inherit; /* Lấy màu của banner (trắng hoặc đen) */
+        text-decoration: none; 
+    }
+    </style>
+</head>
+<body>
+
+    <div class="nav-wrapper">
+        <nav>
+            <div class="logo">
+                <a href="/"><strong>DSMOJ</strong> <small>v1.1</small></a>
+            </div>
+            <div class="menu">
+                <a href="/problems/">Problems</a>
+                <a href="/contests/">Contests</a>
+                <a href="/submissions/">Submissions</a>
+                <a href="/rankings/">Rankings</a>
+                {% if user.is_authenticated %}
+                    <a href="/profile/{{user.username}}">{{ user.username }}</a>
+                    {%if user.is_superuser %}
+                    <a href="/admin/">Superuser Panel</a>
+                    {%elif user.is_staff%}
+                    <a href="/admin/">Admin Panel</a>
+                    {%endif%}
+                {% else %}
+                    <a href="/login/">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+
+{% if active_contest %}
+    {% if show_contest_mode %}
+    <div class="contest-banner" style="background: var(--error); display: flex; justify-content: space-between; padding: 10px 20px;">
+        <span>🎯 CHẾ ĐỘ THI ĐẤU: {{ active_contest.title }}</span>
+        <a href="{% url 'toggle_focus' %}" style="background: white; color: var(--error); padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            XEM KHO ĐỀ CHUNG
+        </a>
+    </div>
+    {% else %}
+    <div class="contest-banner" style="background: yellow; display: flex; justify-content: space-between; padding: 10px 20px;">
+        <span style="color: #1a1a1a;">📋 BẠN ĐANG XEM KHO ĐỀ CHUNG</span>
+        <a href="{% url 'toggle_focus' %}" style="background: white; color: #1a1a1a; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">
+            QUAY LẠI PHÒNG THI
+        </a>
+    </div>
+    {% endif %}
+{% endif %}
+
+    <table>
+        <tr>
+            <th>Judge name</th>
+            <th>Status</th>
+            <th>Uptime</th>
+            <th>Languages</th>
+        </tr>
+        {% for i in judges %}
+        <tr>
+            <td>{{i.name}}</td>
+            <td>
+                {% if i.status == "ON"%} 
+                    online
+                {%elif i.status == "OF"%} 
+                offline
+                {%else%} 
+                restarting
+                {%endif%}
+            </td>
+            <td><div id="countdown">--:--:--</div></td>
+            <script>
+            // Logic đếm ngược đơn giản
+        const endTime = new Date("{{i.last_seen|date:'Y-m-d H:i:s' }}").getTime();
+        if ("{{i.status}}" != "OF"){
+        const x = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = now - endTime;
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById("countdown").innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
+            
+            if (distance < 0) {
+                clearInterval(x);
+                document.getElementById("countdown").innerHTML = "NaN";
+            }
+        }, 1000);
+        }
+        </script>
+            <td>
+                {{i.supported_languages}}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" style="text-align: center; padding: 20px; color: #888;">
+                Không có judge nào khả dụng.
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

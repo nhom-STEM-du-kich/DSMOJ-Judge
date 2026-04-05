@@ -49,19 +49,24 @@ def problem(request, problem_code):
 def problems(request):
     now = timezone.now()
     user = request.user
-    
-    # Check xem có đang tham gia contest nào không
-    active_contest = user.contests_joined.filter(start_time__lte=now, end_time__gte=now).first()
-    
-    # Lấy trạng thái từ Session (mặc định là True nếu đang trong contest)
-    is_focused = request.session.get('is_focused', True)
+    if user.is_authenticated == True:
+        # Check xem có đang tham gia contest nào không
+        active_contest = user.contests_joined.filter(start_time__lte=now, end_time__gte=now).first()
+        
+        # Lấy trạng thái từ Session (mặc định là True nếu đang trong contest)
+        is_focused = request.session.get('is_focused', True)
 
-    if active_contest and is_focused:
-        # Chế độ "In Contest": Chỉ hiện đề thi
-        problems = active_contest.problem.all()
-        show_contest_mode = True
+        if active_contest and is_focused:
+            # Chế độ "In Contest": Chỉ hiện đề thi
+            problems = active_contest.problem.all()
+            show_contest_mode = True
+        else:
+            # Chế độ "Out Contest" hoặc không có contest: Hiện kho đề chung
+            problems = Problem.objects.filter(is_for_contest = False)
+            show_contest_mode = False
     else:
-        # Chế độ "Out Contest" hoặc không có contest: Hiện kho đề chung
+        active_contest = None
+        is_focused = False
         problems = Problem.objects.filter(is_for_contest = False)
         show_contest_mode = False
 
@@ -116,10 +121,8 @@ def get_task(request):
             .order_by("created_at")
             .first()
         )
-
         if not task:
-            return JsonResponse({"status": "empty"})
-
+                return JsonResponse({"status": "empty"})
         task.status = "JG"
         # Lưu lại thằng nào đang chấm bài này để sau này dễ "truy cứu"
         task.judge_node = judge 
@@ -127,7 +130,7 @@ def get_task(request):
 
     try:
         problem = Problem.objects.get(problem_code=task.problem_code)
-
+        judge = JudgeNode.objects.get(api_key=api_key)
         return JsonResponse({
             "status": "success",
             "id": task.id,
@@ -137,7 +140,6 @@ def get_task(request):
             "time_limit": problem.time_limit,
             "test_view": problem.show_test,
         })
-
     except Problem.DoesNotExist:
         task.status = "ER"
         task.save()
@@ -463,3 +465,34 @@ def login_view(request):
                 return redirect("home")
         messages.error(request, "Sai Username hoặc Key!")
     return render(request, "login.html")
+@csrf_exempt
+def judge_status(request):
+    if request.method == "POST":
+        # 1. Xác thực Judge gửi kết quả
+        api_key = request.headers.get('X-DSMOJ-Auth')
+        if not JudgeNode.objects.filter(api_key=api_key, is_online=True).exists():
+            return JsonResponse({"status": "error", "msg": ""}, status=403)
+        # 2. Đi mà so tình hình với chả Judge.
+        judge = JudgeNode.objects.get(api_key=api_key)
+        status = json.loads(request.body).get("status")
+        supported_languages = json.loads(request.body).get("supported_languages")
+        languages_matrix = json.loads(request.body).get("languages_matrix")
+        judge.status = status
+        judge.supported_languages = supported_languages
+        judge.languages_matrix = languages_matrix
+        judge.save()
+    return JsonResponse({"status": "ok"})
+def status(request):
+    now = timezone.now()
+    user = request.user
+    judge = JudgeNode.objects.all()
+    if user.is_authenticated == True:
+        # Check xem có đang tham gia contest nào không
+        active_contest = user.contests_joined.filter(start_time__lte=now, end_time__gte=now).first()
+        
+        # Lấy trạng thái từ Session (mặc định là True nếu đang trong contest)
+        is_focused = request.session.get('is_focused', True)
+    return render(request, 'status.html', {
+        'judges': judge,
+
+    })

@@ -8,12 +8,19 @@ import uuid
 # Tuyệt chiêu: Thêm method trực tiếp vào User (Monkey Patching) 
 # hoặc nếu ông dùng AbstractUser thì viết thẳng vào class đó.
 class JudgeNode(models.Model):
+    STATUS = [
+        ('ON', 'online'),
+        ('OF', 'offline'),
+        ('RS', 'restarting'),
+    ]
+    status = models.CharField(max_length=3, choices=STATUS, default='OF')
     name = models.CharField(max_length=100) # VD: "Node-Phu-Tin", "Node-Lab-PC01"
     ip_address = models.GenericIPAddressField() # IP của máy chạy script
     api_key = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     is_online = models.BooleanField(default=False)
     last_seen = models.DateTimeField(auto_now=True)
-
+    supported_languages = models.CharField(null=True, editable=False)
+    languages_matrix = models.JSONField(null=True, editable = False)
     def __str__(self):
         return f"{self.name} ({self.ip_address})"
 def get_user_avatar(self):
