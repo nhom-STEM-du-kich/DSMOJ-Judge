@@ -81,7 +81,7 @@
     </style>
 </head>
 <body>
-
+    {{ submission.id|json_script:"sub-id" }}
     <div class="nav-wrapper">
         <nav>
             <div class="logo">
@@ -125,19 +125,21 @@
 <div class="container">
     <div class="status-banner">
         <div class="meta-info">Submission #{{ submission.id }} | Problem: {{ submission.problem_code }}</div>
-        <div class="status-title {{ submission.status }}-text">
+        
+        <div id="status-text" class="status-title {{ submission.status }}-text">
             {{ submission.status }}
         </div>
+        
         <div style="font-weight: bold;">User: {{ submission.user}}</div>
     </div>
 
     <h2>Execution Logs</h2>
-    <div class="log-container">
-        <div class="log-header">Detailed Testcase Verdicts</div>
-        <div class="log-content">
-            {{ submission.result_log|safe}}
-        </div>
+<div class="log-container">
+    <div class="log-header">Detailed Testcase Verdicts</div>
+    <div id="log-content" class="log-content">
+        {{ submission.result_log|safe }}
     </div>
+</div>
 
     <div style="margin-top: 2rem; text-align: center;">
         <a href="/problem/{{ submission.problem_code }}" style="color: var(--primary); text-decoration: none;">← Quay lại đề bài</a>
@@ -147,8 +149,52 @@
 </body>
 </html>
 <script>
-    // Tự động reload trang sau 3 giây
-    setTimeout(function(){
-       location.reload();
-    }, 3000);
+    // 1. KHAI BÁO TOÀN CỤC Ở ĐÂY BRUV!
+    let socket; 
+
+    function connectDSMOJ() {
+        try {
+            const subId = JSON.parse(document.getElementById('sub-id').textContent);
+            const wsScheme = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            const wsUrl = wsScheme + window.location.host + '/ws/submission/' + subId + '/';
+
+            console.log("DSMOJ: Khởi tạo kết nối tới:", wsUrl);
+
+            // 2. GÁN GIÁ TRỊ CHO BIẾN TOÀN CỤC
+            socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => console.log("DSMOJ: Ống dẫn đã THÔNG!");
+
+            socket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log("Metadata nhận được:", data);
+
+                // Cập nhật Status
+                const statusElement = document.getElementById('status-text');
+                if (statusElement) {
+                    statusElement.innerText = data.status;
+                    statusElement.className = 'status-title ' + data.status + '-text';
+                }
+
+                // Bơm Logs
+                const logElement = document.getElementById('log-content');
+                if (logElement && data.result_log) {
+                    logElement.innerHTML = data.result_log;
+                }
+            };
+
+            socket.onclose = (e) => {
+                console.warn("DSMOJ: Socket đóng. Code:", e.code);
+            };
+
+            socket.onerror = (err) => console.error("DSMOJ: Lỗi Socket rồi Bruv!", err);
+
+        } catch (err) {
+            console.error("Lỗi khởi tạo WebSockets:", err);
+        }
+    }
+
+    // 3. CHẠY HÀM NGAY KHI LOAD TRANG
+    connectDSMOJ();
+</script>
 </script>

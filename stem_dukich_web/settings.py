@@ -51,6 +51,7 @@ MARKDOWNX_PREVIEW_BOARD = True
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'jazzmin',
     'markdownx',
     'django.contrib.admin',
@@ -93,7 +94,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'stem_dukich_web.wsgi.application'
-
+ASGI_APPLICATION = 'stem_dukich_web.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
@@ -102,6 +103,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 20, # Tăng lên 20 giây để chúng nó xếp hàng chờ nhau ghi bài
+        },
     }
 }
 
@@ -204,4 +208,10 @@ JAZZMIN_UI_TWEAKS = {
     "sidebar_nav_compact_style": False,
     "sidebar_nav_legacy_style": False,
     "sidebar_nav_flat_style": True, # Menu phẳng lỳ theo kiểu Material
+}
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {"hosts": [('127.0.0.1', 6379)]}, # Cổng Redis của ông
+    },
 }

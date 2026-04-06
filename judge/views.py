@@ -13,6 +13,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.db import transaction
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 # Create your views here.
 
 def problem(request, problem_code):
@@ -169,6 +171,15 @@ def update_result(request, sub_id):
                     profile.solved_problems.add(problem)
                     profile.rating += problem.difficulty
                     profile.save()
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+            f'submission_{sub_id}', # Phải khớp với group_name trong Consumer
+            {
+                'type': 'submission.update', # Hàm xử lý trong Consumer
+                'status': sub.status,
+                'result_log': sub.result_log,
+            }
+            )   
 
             return JsonResponse({"status": "success", "msg": "success"})
             
