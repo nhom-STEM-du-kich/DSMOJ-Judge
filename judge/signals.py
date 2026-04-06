@@ -4,10 +4,13 @@ from django.dispatch import receiver
 from .models import Profile
 
 @receiver(post_save, sender=User)
-def create_profile(sender, instance, created, **kwargs):
+def create_user_profile(sender, instance, created, **kwargs):
+    # CHỈ TẠO KHI ĐÓ LÀ USER MỚI TINH (Lúc createsuperuser hoặc Register)
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.get_or_create(user=instance)
 
 @receiver(post_save, sender=User)
-def save_profile(sender, instance, **kwargs):
-    instance.profile.save()
+def save_user_profile(sender, instance, **kwargs):
+    # Đảm bảo Profile luôn tồn tại trước khi save để tránh Crash Metadata
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
