@@ -229,8 +229,12 @@
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            document.getElementById("countdown").innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        // ĐỊNH DẠNG CHUỖI HIỂN THỊ (CHỈ HIỆN 'd' NẾU CÓ NGÀY)
+        let uptimeString = "";
+        if (days > 0) uptimeString += days + "d ";
+        uptimeString += hours + "h " + minutes + "m " + seconds + "s ";
+            document.getElementById("countdown").innerHTML = uptimeString;
             
             if (distance < 0) {
                 clearInterval(x);

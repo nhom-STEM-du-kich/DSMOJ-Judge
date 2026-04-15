@@ -209,26 +209,44 @@
                 restarting
                 {%endif%}
             </td>
-            <td><div id="countdown">--:--:--</div></td>
-            <script>
+            <td><div id="countdown{{forloop.counter}}">--:--:--</div></td>
+
+        <script>
             // Logic đếm ngược đơn giản
-        const endTime = new Date("{{i.last_seen|date:'Y-m-d H:i:s' }}").getTime();
-        if ("{{i.status}}" != "OF"){
-        const x = setInterval(function() {
-            const now = new Date().getTime();
-            const distance = now - endTime;
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            document.getElementById("countdown").innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
-            
-            if (distance < 0) {
-                clearInterval(x);
-                document.getElementById("countdown").innerHTML = "NaN";
-            }
-        }, 1000);
+        var endTime{{forloop.counter}} = new Date("{{i.last_seen|date:'Y-m-d H:i:s' }}").getTime();
+        // Metadata: endTime này phải khớp với lúc Judge của ông khởi động rực lửa nhé!
+
+        // "ON" != "OF" -> Cái check này của ông vẫn húng vãi, tôi giữ lại cho đúng 'chất' Admin Minh
+        if ("{{i.status}}" != "OF") {
+        var x{{forloop.counter}} = setInterval(function() {
+        
+        var now{{forloop.counter}} = new Date().getTime();
+        var distance{{forloop.counter}} = now{{forloop.counter}} - endTime{{forloop.counter}}; // Tính khoảng thời gian đã trôi qua (Uptime)
+
+        // TÍNH TOÁN CÁC ĐƠN VỊ THỜI GIAN (HÚP TRỌN CẢ SỐ NGÀY)
+        var days{{forloop.counter}} = Math.floor(distance{{forloop.counter}} / (1000 * 60 * 60 * 24));
+        var hours{{forloop.counter}} = Math.floor((distance{{forloop.counter}} % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes{{forloop.counter}} = Math.floor((distance{{forloop.counter}} % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds{{forloop.counter}} = Math.floor((distance{{forloop.counter}} % (1000 * 60)) / 1000);
+
+        // ĐỊNH DẠNG CHUỖI HIỂN THỊ (CHỈ HIỆN 'd' NẾU CÓ NGÀY)
+        let uptimeString{{forloop.counter}} = "";
+        if (days{{forloop.counter}} > 0) uptimeString{{forloop.counter}} += days{{forloop.counter}} + "d ";
+        uptimeString{{forloop.counter}} += hours{{forloop.counter}} + "h " + minutes{{forloop.counter}} + "m " + seconds{{forloop.counter}} + "s ";
+
+        // RENDER VÀO HTML
+        element{{forloop.counter}} = document.getElementById("countdown{{forloop.counter}}");
+        // if (element{{forloop.counter}}) {
+            element{{forloop.counter}}.innerHTML = uptimeString{{forloop.counter}};
+        // }
+
+        // NẾU DISTANCE < 0 (LỖI THỜI GIAN HỆ THỐNG), HIỆN NaN VÀ DỪNG
+        if (distance{{forloop.counter}} < 0) {
+            clearInterval(x{{forloop.counter}});
+            if (element) element.innerHTML = "NaN (Clock Error)";
         }
+    }, 1000);
+}
         </script>
             <td>
                 {{i.supported_languages}}
