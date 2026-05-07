@@ -101,14 +101,14 @@ ASGI_APPLICATION = 'stem_dukich_web.asgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 20, # Tăng lên 20 giây để chúng nó xếp hàng chờ nhau ghi bài
-        },
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dsmoj_db',
+        'USER': 'dsmoj_user',
+        'PASSWORD': 'DhzLMrTXPt2pVHMC', # Metadata mật khẩu ông vừa đặt ở trên
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

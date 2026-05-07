@@ -247,6 +247,7 @@
         </div>
 
         <aside class="extra_information">
+            {{if user.authenticated}}
             {% if active_contest and show_contest_mode %}
                 <a href="/contest/{{ active_contest.id }}/submit/{{ problem.problem_code }}" class="btn-submit" style="background: var(--error);">
                     🚀 Submit to Contest
