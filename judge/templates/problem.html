@@ -247,7 +247,7 @@
         </div>
 
         <aside class="extra_information">
-            {{if user.authenticated}}
+            {{%if user.authenticated%}}
             {% if active_contest and show_contest_mode %}
                 <a href="/contest/{{ active_contest.id }}/submit/{{ problem.problem_code }}" class="btn-submit" style="background: var(--error);">
                     🚀 Submit to Contest
@@ -257,6 +257,7 @@
                     🚀 Submit Here
                 </a>
             {% endif %}
+            {%endif%}
 
             <a href="/problem/{{ problem.problem_code }}/printed_view" class="btn-pdf">
                 📄 View as PDF
