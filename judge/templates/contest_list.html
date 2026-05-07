@@ -263,7 +263,7 @@
                                 {% if user in c.participants.all %}
                                     <a href="/contest/{{ c.id }}" class="btn-join btn-success">VÀO THI</a>
                                 {% else %}
-                                    <form action="/register-contest/{{ c.id }}" method="POST">
+                                    <form action="/register-contest/{{ c.id }}/" method="POST">
                                         {% csrf_token %}
                                         <button type="submit" class="btn-join">ĐĂNG KÝ</button>
                                     </form>
