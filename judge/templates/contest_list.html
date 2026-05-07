@@ -301,7 +301,7 @@
                             {% if user.is_authenticated and user in c.participants.all %}
                                 <span class="status-upcoming">ĐÃ ĐĂNG KÝ</span>
                             {% else %}
-                                <form action="/register-contest/{{ c.id }}" method="POST">
+                                <form action="/register-contest/{{ c.id }}/" method="POST">
                                     {% csrf_token %}
                                     <button type="submit" class="btn-join">GHI DANH SỚM</button>
                                 </form>
@@ -329,7 +329,7 @@
                 <tbody>
                     {% for c in past %}
                     <tr>
-                        <td><a href="/contest/{{ c.id }}" style="color: #888;">{{ c.title }}</a></td>
+                        <td><a href="/contest/{{ c.id }}/" style="color: #888;">{{ c.title }}</a></td>
                         <td>{{ c.start_time|date:"d/m/Y" }}</td>
                         <td>{{ c.participants.count }} thí sinh</td>
                         <td><a href="/contest/{{ c.id }}/rankings/">Leaderboard</a></td>
